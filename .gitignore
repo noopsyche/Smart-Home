@@ -88,4 +88,4 @@ ENV/
 .ropeproject
 
 #phpstorm
-.idea
+.idea/
