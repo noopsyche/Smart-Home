@@ -4,6 +4,7 @@ import pyaudio
 import numpy as np
 from datetime import datetime
 import wave
+import time
 import config.recode as config
 from lib import log
 
@@ -11,12 +12,15 @@ from lib import log
 
 
 def save_wave_file(file_name, data):
-    wf = wave.open(file_name, 'wb')
-    wf.setnchannels(1)
-    wf.setsampwidth(2)
-    wf.setframerate(config.RATE)
-    wf.writeframes(b''.join(data))
-    wf.close()
+    try:
+        with wave.open(file_name, 'wb') as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(config.RATE)
+            wf.writeframes(b''.join(data))
+
+    except IOError as e:
+        log.error("保存wav文件失败: " + file_name)
 
 
 # 开始录音
@@ -51,6 +55,8 @@ def start():
                     log.normal("recode over")
                 else:
                     save_buffer = [string_audio_data, ]
+                    time.sleep(0.01)
+
         else:
             # 达到记录等级
             # 将要保存的数据存放到save_buffer中

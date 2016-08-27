@@ -33,8 +33,8 @@ class Voice:
                     log.normal("从文件获取baidu_access_token成功")
                     return data
 
-        except OSError as e:
-                log.error("获取baidu_access_token发生系统错误:", e)
+        except BaseException as e:
+                log.error("获取baidu_access_token发生异常:", e)
                 return False
 
         # 请求地址
@@ -61,8 +61,8 @@ class Voice:
 
                 return data["access_token"]
 
-        except OSError as e:
-                log.error("获取baidu_access_token发生系统错误:", e)
+        except BaseException as e:
+                log.error("获取baidu_access_token发生异常:", e)
                 return False
 
     # 输出语音信息
@@ -70,7 +70,10 @@ class Voice:
     def parse_text_result(data):
         data = json.loads(data.decode("utf-8"))
         if "success." == data["err_msg"]:
-            log.debug("获取的文本信息"+data["result"])
+            result = data["result"][0]
+            log.debug("获取的文本信息：" + result)
+            Voice.tts(result)
+
         else:
             log.warning("语音转文字失败。原因：" + data["err_msg"])
 
@@ -78,7 +81,8 @@ class Voice:
         通过语音文件内容获取文本信息
         @param file_name 语音文件地址，wav格式
     '''
-    def get_text(self, file_name):
+    @classmethod
+    def get_text(cls, file_name):
         log.normal("音频转文字: " + file_name)
         # 请求地址
         request_url = "http://vop.baidu.com/server_api"
@@ -86,7 +90,7 @@ class Voice:
         # 参数
         p_rate = config.RATE  # 采样率，支持 8000 或者 16000
         p_cuid = "FC-AA-14-D0-1D-67"  # 用户唯一标识，用来区分用户，填写机器 MAC 地址，长度为60以内
-        p_token = self.get_access_token()  # 开放平台获取到的开发者 access_token
+        p_token = cls.get_access_token()  # 开放平台获取到的开发者 access_token
         fp = wave.open(file_name, 'rb')
         nf = fp.getnframes()
         p_len = nf * 2
@@ -104,25 +108,27 @@ class Voice:
         c.setopt(c.POST, 1)
         c.setopt(c.CONNECTTIMEOUT, 30)
         c.setopt(c.TIMEOUT, 30)
-        c.setopt(c.WRITEFUNCTION, self.parse_text_result)
+        c.setopt(c.WRITEFUNCTION, cls.parse_text_result)
         c.setopt(c.POSTFIELDS, p_speech)
         c.setopt(c.POSTFIELDSIZE, p_len)
         try:
             c.perform()
-        except OSError as e:
-            log.error("语音转文字失败。发生系统错误：" + e)
+        except BaseException as e:
+            log.error("语音转文字发生异常：" + e)
 
     '''
         文字信息转音频
         @param text 欲转换成音频的文字
     '''
-    def tts(self, text):
+    @classmethod
+    def tts(cls, text):
         if len(text) > 1024:
             log.warning("tts文本过长")
             return False
+
         log.normal("TTS: " + text)
         # 参数
-        p_token = self.get_access_token()  # 开放平台获取到的开发者 access_token
+        p_token = cls.get_access_token()  # 开放平台获取到的开发者 access_token
         p_cuid = "FC-AA-14-D0-1D-67"  # 用户唯一标识，用来区分用户，填写机器 MAC 地址，长度为60以内
         request_url = "http://tsn.baidu.com/text2audio?"
         data = {
@@ -131,7 +137,7 @@ class Voice:
             "tok": p_token,
             "ctp": 1,
             "cuid": p_cuid,
-            "spd": "4",
+            "spd": "3",
             "pit": "4",
             "vol": "9",
             "per": "3",
@@ -151,22 +157,26 @@ class Voice:
                 filename = "cache/mp3/" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + ".mp3"
                 with open(filename, "wb") as file:
                     file.write(data)
+                    file.close()
 
-                #播放
-                self.play_mp3(filename)
+                # 播放
+                cls.play_mp3(filename)
                 return True
 
-        except OSError as e:
-                log.error("获取baidu_tts发生系统错误:", e)
+        except BaseException as e:
+                log.error("获取baidu_tts发生异常:", e)
                 return False
 
+    '''
+        播放mp3文件
+    '''
     @staticmethod
     def play_mp3(filename):
         log.normal("播放MP3 " + filename)
         try:
-            freq = 16000  # audio CD quality
+            freq = 16000  # 16kbs
             mixer.init(freq)
             mixer.music.load(filename)
             mixer.music.play()
-        except OSError as e:
-            log.error("播放MP3发生系统错误：" + e)
+        except BaseException as e:
+            log.error("播放MP3发生异常：" + e)

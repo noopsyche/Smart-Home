@@ -1,10 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from lib import baidu_voice as s2t
-from lib import recode
-from lib import log
 from multiprocessing import Process
 from voicesan import VoiceScan
+import recode
 
 
 # 子进程创建

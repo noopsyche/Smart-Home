@@ -3,11 +3,13 @@
 import os
 from lib import log
 import re
-
+from lib import baidu_voice
 
 class VoiceScan:
+
     # 扫描音频文件
-    def start(self):
+    @staticmethod
+    def start():
         # 扫描目录
         root_dir = "cache/sound"
         log.debug("开始扫描音频文件...")
@@ -19,19 +21,23 @@ class VoiceScan:
                     m = re_wav.match(file)
                     if m:
                         # 开始处理音频文件
-                        self.deal(m.group(1))
+                        VoiceScan.deal(m.group(1))
 
-            except OSError as e:
-                log.error("扫描音频文件发生系统错误: " + e)
+            except BaseException as e:
+                log.error("扫描音频文件发生异常: " + e)
 
     # 处理音频文件
     @staticmethod
     def deal(filename):
         try:
-            log.normal("开始处理音频文件：" + filename)
-            filename = "before_" + filename
+            filename_before = "cache/sound/" + "before_" + filename
+            log.normal("开始处理音频文件：" + filename_before)
+            # 转换文字
+            baidu_voice.Voice.get_text(filename_before)
 
-            log.normal("音频文件处理完毕：" + filename)
+            # 重命名文件，避免表明重复扫描
+            os.rename(filename_before, "cache/sound/" + "end_" + filename)
+            log.normal("音频文件处理完毕：" + filename_before)
 
-        except OSError as e:
-            log.error("处理音频文件发生系统错误: " + e)
+        except BaseException as e:
+            log.error("处理音频文件发生异常: " + e)
