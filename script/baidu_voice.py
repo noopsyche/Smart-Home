@@ -7,17 +7,24 @@ import wave
 import json
 import os
 import time
+import random
 from datetime import datetime
-from lib import log
 from pygame import mixer
+from script import command
+from script import log
 
 
 class Voice:
+    # 缓存的access_token
+    access_token_cache = ""
 
     # 获取access_token
     # 参照地址：http://yuyin.baidu.com/docs/tts/135#获取 Access Token
     @staticmethod
     def get_access_token():
+        if "" != Voice.access_token_cache:
+            log.normal("从缓存获取baidu_access_token成功")
+            return Voice.access_token_cache
         # access_token 保存文件
         access_token_filename = "cache/token/baidu_access_token"
         # 计算时间差，21天换一次
@@ -29,12 +36,12 @@ class Voice:
         try:
             if 21 > (datetime.now() - datetime(int(y), int(m), int(d))).days:
                 with open(access_token_filename, "r") as file:
-                    data = file.read()
+                    Voice.access_token_cache = file.read()
                     log.normal("从文件获取baidu_access_token成功")
-                    return data
+                    return Voice.access_token_cache
 
         except BaseException as e:
-                log.error("获取baidu_access_token发生异常:", e)
+                log.exp("获取baidu_access_token发生异常。", e)
                 return False
 
         # 请求地址
@@ -59,10 +66,12 @@ class Voice:
                 with open(access_token_filename, "w") as file:
                     file.write(data["access_token"])
 
-                return data["access_token"]
+                Voice.access_token_cache = data["access_token"]
 
-        except BaseException as e:
-                log.error("获取baidu_access_token发生异常:", e)
+                return Voice.access_token_cache
+
+        except Exception as e:
+                log.exp("获取baidu_access_token发生异常。", e)
                 return False
 
     # 输出语音信息
@@ -71,8 +80,7 @@ class Voice:
         data = json.loads(data.decode("utf-8"))
         if "success." == data["err_msg"]:
             result = data["result"][0]
-            log.debug("获取的文本信息：" + result)
-            Voice.tts(result)
+            command.Command.insert(result)
 
         else:
             log.warning("语音转文字失败。原因：" + data["err_msg"])
@@ -113,8 +121,8 @@ class Voice:
         c.setopt(c.POSTFIELDSIZE, p_len)
         try:
             c.perform()
-        except BaseException as e:
-            log.error("语音转文字发生异常：" + e)
+        except Exception as e:
+            log.exp("语音转文字发生异常。", e)
 
     '''
         文字信息转音频
@@ -135,9 +143,9 @@ class Voice:
             "tex": text,
             "lan": "zh",
             "tok": p_token,
-            "ctp": 1,
             "cuid": p_cuid,
-            "spd": "3",
+            "ctp": 1,
+            "spd": "4",
             "pit": "4",
             "vol": "9",
             "per": "3",
@@ -154,17 +162,19 @@ class Voice:
                 log.normal("获取baidu_tts成功")
 
                 # 保存到文件
-                filename = "cache/mp3/" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + ".mp3"
+                random.seed()
+                filename = "cache/mp3/" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + \
+                           str(random.randint(0, 99999)) + ".mp3"
+
                 with open(filename, "wb") as file:
                     file.write(data)
-                    file.close()
 
                 # 播放
                 cls.play_mp3(filename)
                 return True
 
-        except BaseException as e:
-                log.error("获取baidu_tts发生异常:", e)
+        except Exception as e:
+                log.exp("获取baidu_tts发生异常。", e)
                 return False
 
     '''
@@ -176,7 +186,13 @@ class Voice:
         try:
             freq = 16000  # 16kbs
             mixer.init(freq)
-            mixer.music.load(filename)
-            mixer.music.play()
-        except BaseException as e:
-            log.error("播放MP3发生异常：" + e)
+            if os.path.isfile(filename):
+                if os.path.getsize(filename):
+                    mixer.music.load(filename)
+                    mixer.music.play()
+                else:
+                    log.warning("播放MP3错误,文件不存在：" + filename)
+            else:
+                log.warning("播放MP3错误,文件不存在：" + filename)
+        except Exception as e:
+            log.exp("播放MP3发生异常。", e)

@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
-from lib import log
 import re
-from lib import baidu_voice
+from script import log
+from script import baidu_voice
+
 
 class VoiceScan:
 
@@ -12,7 +13,7 @@ class VoiceScan:
     def start():
         # 扫描目录
         root_dir = "cache/sound"
-        log.debug("开始扫描音频文件...")
+        log.normal("开始扫描音频文件...")
         while True:
             try:
                 for file in os.listdir(root_dir):
@@ -23,8 +24,8 @@ class VoiceScan:
                         # 开始处理音频文件
                         VoiceScan.deal(m.group(1))
 
-            except BaseException as e:
-                log.error("扫描音频文件发生异常: " + e)
+            except Exception as e:
+                log.exp("扫描音频文件发生异常: ", e)
 
     # 处理音频文件
     @staticmethod
@@ -39,5 +40,5 @@ class VoiceScan:
             os.rename(filename_before, "cache/sound/" + "end_" + filename)
             log.normal("音频文件处理完毕：" + filename_before)
 
-        except BaseException as e:
-            log.error("处理音频文件发生异常: " + e)
+        except Exception as e:
+            log.exp("处理音频文件发生异常: ", e)

@@ -6,7 +6,7 @@ from datetime import datetime
 import wave
 import time
 import config.recode as config
-from lib import log
+from script import log
 
 # 将data中的数据保存到名为filename的WAV文件中
 
@@ -20,7 +20,7 @@ def save_wave_file(file_name, data):
             wf.writeframes(b''.join(data))
 
     except IOError as e:
-        log.error("保存wav文件失败: " + file_name)
+        log.exp("保存wav文件失败: " + file_name, e)
 
 
 # 开始录音
@@ -35,7 +35,7 @@ def start():
     save_count = 0
     save_buffer = []
     start_recode = 0
-    log.normal("recode listen start...")
+    log.normal("开始监听麦克风...")
     while True:
         # 读入NUM_SAMPLES个取样
         string_audio_data = stream.read(config.NUM_BLOCK)
@@ -52,7 +52,7 @@ def start():
                 if 1 == start_recode:
                     start_recode = 0
                     save_buffer.append(string_audio_data)
-                    log.normal("recode over")
+                    log.normal("录音结束")
                 else:
                     save_buffer = [string_audio_data, ]
                     time.sleep(0.01)
@@ -64,7 +64,7 @@ def start():
             if 0 == start_recode:
                 save_count = config.SAVE_LENGTH
                 start_recode = 1
-                log.normal("recode start")
+                log.normal("开始录音")
 
         if 0 == start_recode:
             # 将save_buffer中的数据写入WAV文件，WAV文件的文件名是保存的时刻
@@ -72,4 +72,4 @@ def start():
                 filename = "cache/sound/before_" + datetime.now().strftime("%Y-%m-%d_%H_%M_%S") + ".wav"
                 save_wave_file(filename, save_buffer)
                 save_buffer = []
-                log.normal(filename + " saved")
+                log.normal(filename + " 保存文件")
