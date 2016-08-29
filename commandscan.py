@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import time
+import os
 from mysql import connector
-from script import log
-from script import command
+from lib import log
+from lib import command
 from config import mysql as mysql_con
-from script import baidu_voice
-from script import serial
 
 
 class CommandScan:
@@ -35,7 +34,7 @@ class CommandScan:
                     results = cursor.fetchall()
                     for row in results:
                         # 处理
-                        CommandScan.deal(row[0], row[1])
+                        CommandScan.trans(row[0], row[1])
 
                     cursor.close()
 
@@ -51,22 +50,57 @@ class CommandScan:
         except Exception as e:
             log.exp("扫描数据库未完成命令", e)
 
-    # 处理命令
+    # 翻译命令
     @staticmethod
-    def deal(command_id, content):
+    def trans(command_id, content):
         try:
             log.normal("执行命令： 命令编号: %d 内容: %s" % (command_id, content))
 
-            if -1 != content.find("开"):
-                log.debug("开灯")
-                serial.Serial.open_light()
+            try:
+                conn = ""
+                conn = connector.connect(host=mysql_con.HOST,
+                                         user=mysql_con.USERNAME,
+                                         password=mysql_con.PASSWORD,
+                                         port=mysql_con.PORT,
+                                         database=mysql_con.DATABASE,
+                                         charset=mysql_con.CHARSET)
+                cursor = conn.cursor()
+                cursor.execute("""SELECT * FROM translates WHERE
+                                (`type`=1 AND command=%s)
+                                OR
+                                (`type`=0 AND command LIKE %s)""",
+                               (content, "%" + content + "%", ))
 
-            if -1 != content.find("关 vc"):
-                log.debug("关灯")
-                serial.Serial.close_light()
+                is_exec = False
+                # 获取所有记录
+                row = cursor.fetchone()
+                if None is not row:
+                    # 处理
+                    CommandScan.deal(row[0], row[2], row[3])
+                    is_exec = True
 
-            command.Command.exec(command_id)
-            baidu_voice.Voice.tts("执行完毕")
+                cursor.close()
+                if False is is_exec:
+                    log.normal("命令未执行： 命令编号: %d 内容: %s" % (command_id, content))
+
+            except Exception as e:
+                log.exp("翻译命令: %s" % content, e)
+
+            finally:
+                command.Command.exec(command_id)
+                if "" != conn:
+                    conn.close()
 
         except Exception as e:
-            log.exp("执行命令： 命令编号: %d 内容: %s" % (command_id, content), e)
+            log.exp("翻译命令： 命令编号: %d 内容: %s" % (command_id, content), e)
+
+    # 处理命令
+    @staticmethod
+    def deal(trans_id, trans_script_name,trans_script_arvg):
+        try:
+            log.normal("执行命令： 命令编号: %d 脚本名称: %s 参数：%s" % (trans_id, trans_script_name, trans_script_arvg))
+
+            os.system("python script/%s %s" % (trans_script_name, trans_script_arvg))
+
+        except Exception as e:
+            log.exp("执行命令： 命令编号: %d 脚本名称: %s 参数：%s" % (trans_id, trans_script_name, trans_script_arvg), e)

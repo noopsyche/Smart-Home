@@ -1,4 +1,4 @@
-﻿/*
+/*
 Navicat MySQL Data Transfer
 
 Source Server         : 本地
@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50505
 File Encoding         : 65001
 
-Date: 2016-08-28 23:40:09
+Date: 2016-08-30 01:47:05
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -45,6 +45,32 @@ CREATE TABLE `command` (
   `status` int(5) DEFAULT '0' COMMENT '状态 (0 未执行 1 已执行)',
   `posttime` int(15) DEFAULT NULL COMMENT '提交时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=452 DEFAULT CHARSET=utf8;
 
+-- ----------------------------
+-- Records of command
+-- ----------------------------
+INSERT INTO `command` VALUES ('451', '天气', '0', '1472492823');
 
+-- ----------------------------
+-- Table structure for translates
+-- ----------------------------
+DROP TABLE IF EXISTS `translates`;
+CREATE TABLE `translates` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '递增序列id',
+  `command` varchar(5120) DEFAULT NULL COMMENT '指令列表',
+  `script_name` varchar(255) DEFAULT NULL COMMENT '执行脚本名称',
+  `arvg` varchar(2550) DEFAULT NULL COMMENT '脚本参数',
+  `type` int(11) DEFAULT '0' COMMENT '命令匹配类型(0 模糊匹配 1精确匹配）',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of translates
+-- ----------------------------
+INSERT INTO `translates` VALUES ('1', '开灯,光，但我将给你们带来光明', 'serial_switch.py', 'FF-01-01-02-EE', '0');
+INSERT INTO `translates` VALUES ('2', '关灯,黑暗,但我喜欢黑暗', 'serial_switch.py', 'FF-01-00-01-EE', '0');
+INSERT INTO `translates` VALUES ('3', '今天天气,天气', 'weather.py', 'today', '0');
+INSERT INTO `translates` VALUES ('4', '明天天气', 'weather.py', 'tomorrow', '0');
+INSERT INTO `translates` VALUES ('5', '现在几点,时间', 'time.py', 'now', '0');
+INSERT INTO `translates` VALUES ('6', '今天日期,日期,今天几号', 'time.py', 'today', '0');

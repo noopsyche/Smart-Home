@@ -3,15 +3,16 @@
 import config.recode as config
 from urllib import request, parse
 import pycurl
+import subprocess
 import wave
 import json
 import os
+import re
 import time
 import random
 from datetime import datetime
-from pygame import mixer
-from script import command
-from script import log
+from lib import command
+from lib import log
 
 
 class Voice:
@@ -80,7 +81,13 @@ class Voice:
         data = json.loads(data.decode("utf-8"))
         if "success." == data["err_msg"]:
             result = data["result"][0]
-            command.Command.insert(result)
+            # 正则去除标点符号，空格等
+            p = re.compile("([，。 ]?)")
+            result = p.sub("", result)
+            if "" != result:
+                command.Command.insert(result)
+            else:
+                log.normal("语音转文字为空")
 
         else:
             log.warning("语音转文字失败。原因：" + data["err_msg"])
@@ -146,7 +153,7 @@ class Voice:
             "cuid": p_cuid,
             "ctp": 1,
             "spd": "4",
-            "pit": "4",
+            "pit": "3",
             "vol": "9",
             "per": "3",
         }
@@ -184,12 +191,18 @@ class Voice:
     def play_mp3(filename):
         log.normal("播放MP3 " + filename)
         try:
-            freq = 16000  # 16kbs
-            mixer.init(freq)
             if os.path.isfile(filename):
                 if os.path.getsize(filename):
-                    mixer.music.load(filename)
-                    mixer.music.play()
+                    path_now = os.path.dirname(os.path.abspath(__file__))
+                    if "nt" == os.name:
+                        # windows
+                        player = os.path.join(path_now, "player", "mpg123-win32.exe")
+                    else:
+                        # mac linux
+                        player = os.path.join(path_now, "player", "mpg123-mac")
+
+                    os.system("%s %s" % (player, filename))
+
                 else:
                     log.warning("播放MP3错误,文件不存在：" + filename)
             else:

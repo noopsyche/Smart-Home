@@ -12,3 +12,13 @@
     3. 增加 web端 文件 web目录
     4. 修正异常日志记录
     5. 增加指令入库，指令扫描模块
+
+#### 2016-08-29
+    1. 更名  script 为 lib(我承认自己有点抽风)
+    2. 更新sql文件，添加指令翻译translates表
+    3. 修改指令执行流程
+    4. script文件夹用来存放扩展脚本，也就是translates里的 script_name
+    5. 增加脚本：
+        serial_switch.py 串口操作脚本
+        time.py 日期时间脚本
+        weather.py 天气信息脚本

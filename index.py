@@ -3,6 +3,7 @@
 from multiprocessing import Process
 from voicesan import VoiceScan
 from commandscan import CommandScan
+from lib import baidu_voice
 import recode
 
 
@@ -31,4 +32,5 @@ def main():
     Process(target=sub_process, args=('start_command_scan',)).start()
 
 if __name__ == '__main__':
+    baidu_voice.Voice.tts("先生，又见面了")
     main()

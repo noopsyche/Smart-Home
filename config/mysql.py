@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # MYSQL
 HOST = "localhost"  # 数据库地址
 USERNAME = "root"   # 数据库用户名

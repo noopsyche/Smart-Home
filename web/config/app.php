@@ -153,7 +153,6 @@ return [
         /*
          * Package Service Providers...
          */
-        Turbo\Provider\Laravel\TurboServiceProvider,
 
         /*
          * Application Service Providers...

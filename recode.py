@@ -6,7 +6,7 @@ from datetime import datetime
 import wave
 import time
 import config.recode as config
-from script import log
+from lib import log
 
 # 将data中的数据保存到名为filename的WAV文件中
 

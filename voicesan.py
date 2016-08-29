@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-from script import log
-from script import baidu_voice
+from lib import log
+from lib import baidu_voice
 
 
 class VoiceScan:

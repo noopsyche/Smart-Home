@@ -3,7 +3,7 @@
 
 from datetime import datetime
 from mysql import connector
-from script import log
+from lib import log
 from config import mysql as mysql_con
 
 

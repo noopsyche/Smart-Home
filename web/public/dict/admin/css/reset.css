@@ -1,0 +1,42 @@
+body,html{
+    min-width: 1280px;
+    font-size: 0;
+    font-family: 微软雅黑,Arial,宋体;
+    height: 100%;
+}
+
+a,a:hover{
+    text-decoration: none;
+}
+
+#section_main{
+    height: 100%;
+    width: 100%;
+}
+#section_left{
+    vertical-align: top;
+    display: inline-block;
+    height: 100%;
+    background: black;
+    padding: 0;
+}
+#section_right{
+    vertical-align: top;
+    display: inline-block;
+    height: 100%;
+}
+
+#section_left .nav_item{
+    list-style: none;
+    width: 100%;
+    line-height: 35px;
+    padding: 10px;
+    color: white;
+    font-size: 14px;
+    background-color: #aaaaaa;
+    margin: 5px 0;
+}
+
+#section_left .nav_item:hover{
+    text-decoration: none;
+}
